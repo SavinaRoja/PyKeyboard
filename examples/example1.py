@@ -1,5 +1,5 @@
 """
-A script to illustrate PyKeyboard use..
+A script to illustrate PyKeyboard use
 """
 
 import pykeyboard
