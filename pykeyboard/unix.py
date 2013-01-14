@@ -47,44 +47,59 @@ special_X_keysyms = {
     '~' : "asciitilde"
     }
 
-shift_key = 50  # This is constant, as far as I can tell; it works for now
-
 class PyKeyboard(PyKeyboardMeta):
     """The PyKeyboard implementation for Unix systems with Xlib."""
     def __init__(self, display=None):
         PyKeyboardMeta.__init__(self)
         self.display = Display(display)
         self.display2 = Display(display)
+        self.shift_key = self.lookup_character_value('Shift_L')
+        self.alt_key = self.lookup_character_value('Alt_L')
+        self.control_key = self.lookup_character_value('Control_L')
+        self.tab_key = self.lookup_character_value('Tab')
     
     def press_key(self, character=''):
-        """Press a given character key."""
-        shifted = self.is_char_shifted(character)
-        if shifted:
-            fake_input(self.display, X.KeyPress, shift_key)
-        char_val = self.lookup_character_value(character)
-        fake_input(self.display, X.KeyPress, char_val)
-        self.display.sync()
+        """
+        Press a given character key. Also works with character keycodes as
+        integers, but not keysyms.
+        """
+        try:  # Detect uppercase or shifted character
+            shifted = self.is_char_shifted(character)
+        except AttributeError:  # Handle the case of integer keycode argument
+            fake_input(self.display, X.KeyPress, character)
+            self.display.sync()
+        else:
+            if shifted:
+                fake_input(self.display, X.KeyPress, self.shift_key)
+            char_val = self.lookup_character_value(character)
+            fake_input(self.display, X.KeyPress, char_val)
+            self.display.sync()
 
     def release_key(self, character=''):
-        """Release a given character key."""
-        shifted = self.is_char_shifted(character)
-        char_val = self.lookup_character_value(character)
-        fake_input(self.display, X.KeyRelease, char_val)
-        if shifted:
-            fake_input(self.display, X.KeyRelease, shift_key)
-        self.display.sync()
+        """
+        Release a given character key. Also works with character keycodes as
+        integers, but not keysyms.
+        """
+        try:  # Detect uppercase or shifted character
+            shifted = self.is_char_shifted(character)
+        except AttributeError:  # Handle the case of integer keycode argument
+            fake_input(self.display, X.KeyRelease, character)
+            self.display.sync()
+        else:
+            if shifted:
+                fake_input(self.display, X.KeyRelease, self.shift_key)
+            char_val = self.lookup_character_value(character)
+            fake_input(self.display, X.KeyRelease, char_val)
+            self.display.sync()
 
     def tap_key(self, character='', repeat=1):
-        """Press and release a given character key n times."""
-        shifted = self.is_char_shifted(character)
+        """
+        Press and release a given character key n times. Also works with
+        character keycodes as integers, but not keysyms.
+        """
         for i in xrange(repeat):
-            if shifted:
-                fake_input(self.display, X.KeyPress, shift_key)
             self.press_key(character)
             self.release_key(character)
-            if shifted:
-                fake_input(self.display, X.KeyRelease, shift_key)
-            self.display.sync()
     
     def type_string(self, char_string, char_interval=0):
         """A convenience method for typing longer strings of characters."""
