@@ -53,12 +53,7 @@ class PyKeyboard(PyKeyboardMeta):
         PyKeyboardMeta.__init__(self)
         self.display = Display(display)
         self.display2 = Display(display)
-        self.shift_key = self.lookup_character_value('Shift_L')
-        self.alt_key = self.lookup_character_value('Alt_L')
-        self.control_key = self.lookup_character_value('Control_L')
-        self.tab_key = self.lookup_character_value('Tab')
-        self.return_key = self.lookup_character_value('Return')
-        self.enter_key = self.lookup_character_value('Return')
+        self.special_key_assignment()
     
     def press_key(self, character=''):
         """
@@ -142,13 +137,13 @@ class PyKeyboard(PyKeyboardMeta):
         #Modifier Keys
         self.shift_l_key = self.lookup_character_value('Shift_L')
         self.shift_r_key = self.lookup_character_value('Shift_R')
-        self.shift_key = self.shift_l_key
+        self.shift_key = self.shift_l_key  # Default Shift is left Shift
         self.alt_l_key = self.lookup_character_value('Alt_L')
         self.alt_r_key = self.lookup_character_value('Alt_R')
-        self.alt_key = self.alt_l_key
+        self.alt_key = self.alt_l_key  # Default Alt is left Alt
         self.control_l_key = self.lookup_character_value('Control_L')
         self.control_r_key = self.lookup_character_value('Control_R')
-        self.control_key = self.control_l_key
+        self.control_key = self.control_l_key  # Default Ctrl is left Ctrl
         self.caps_lock_key = self.lookup_character_value('Caps_Lock')
         self.shift_lock_key = self.lookup_character_value('Shift_Lock')
         self.meta_l_key = self.lookup_character_value('Meta_L')
@@ -191,6 +186,7 @@ class PyKeyboard(PyKeyboardMeta):
                   'Multiply', 'Add', 'Separator', 'Subtract', 'Decimal',
                   'Divide', 0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
         self.keypad_keys = {k: self.lookup_character_value('KP_'+str(k)) for k in keypad}
+        self.numpad_keys = self.keypad_keys
         #Function Keys/ Auxilliary Keys
         #FKeys
         self.function_keys = [None] + [self.lookup_character_value('F'+str(i)) for i in xrange(1,36)]
