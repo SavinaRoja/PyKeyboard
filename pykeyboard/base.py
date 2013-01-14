@@ -42,7 +42,7 @@ class PyKeyboardMeta(object):
         self.up_key = None
         self.down_key = None
         self.left_key = None
-        self.rigt_key = None
+        self.right_key = None
         raise NotImplementedError
 
     def lookup_character_value(self, character):
