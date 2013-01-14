@@ -29,6 +29,21 @@ class PyKeyboardMeta(object):
         for i in char_string:
             time.sleep(char_interval)
             self.tap_key(i)
+        raise NotImplementedError
+
+    def special_key_assignment(self):
+        """Makes special keys more accessible."""
+        self.shift_key = None
+        self.alt_key = None
+        self.control_key = None
+        self.tab_key = None
+        self.return_key = None
+        self.enter_key = None
+        self.up_key = None
+        self.down_key = None
+        self.left_key = None
+        self.rigt_key = None
+        raise NotImplementedError
 
     def lookup_character_value(self, character):
         """
