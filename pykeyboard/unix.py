@@ -57,6 +57,8 @@ class PyKeyboard(PyKeyboardMeta):
         self.alt_key = self.lookup_character_value('Alt_L')
         self.control_key = self.lookup_character_value('Control_L')
         self.tab_key = self.lookup_character_value('Tab')
+        self.return_key = self.lookup_character_value('Return')
+        self.enter_key = self.lookup_character_value('Return')
     
     def press_key(self, character=''):
         """
