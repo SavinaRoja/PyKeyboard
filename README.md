@@ -15,10 +15,15 @@ extended to solve new problems.
 Todo:
 -----
 Add support for Windows
+
 Add support for Mac
+
 Add support for mobile systems?
+
 Identify further feature requests (dynamic remapping?)
+
 Develop keyboard monitoring for interactive keyboard discovery
+
 Provide example of PyKeyboard extension for non-standard keyboard
 
 
