@@ -233,9 +233,12 @@ class PyKeyboardEvent(PyKeyboardEventMeta):
                     'client_started': False,
                     'client_died': False,
             }])
+        self.shift_state = 0  # 0 is off, 1 is on
+        self.alt_state = 0  # 0 is off, 2 is on
+        self.mod_keycodes = self.get_mod_keycodes()
 
     def run(self):
-        """Apply this method to begin listening for keyboard input events."""
+        """Begin listening for keyboard input events."""
         if self.capture:
             self.display2.screen().root.grab_keyboard(True, X.KeyPressMask | X.KeyReleaseMask, X.GrabModeAsync, X.GrabModeAsync, 0, 0, X.CurrentTime)
 
@@ -258,7 +261,7 @@ class PyKeyboardEvent(PyKeyboardEventMeta):
             event, data = rq.EventField(None).parse_binary_value(data, self.display.display, None, None)
             if event.type == X.KeyPress:
                 #Stop if escape is pressed, this may go away at some point
-                if event.detail == self.lookup_character_value('Escape'):
+                if event.detail == self.escape_code():
                     self.stop()
                 else:
                     self.key_press(event.detail)
@@ -268,23 +271,51 @@ class PyKeyboardEvent(PyKeyboardEventMeta):
                 print('WTF: {0}'.format(event.type))
 
     def key_press(self, keycode):
-        """This is just for testing"""
-        print('Key Pressed! {0}'.format(self.lookup_char_from_keycode(keycode)))
+        """A key has been pressed, do stuff."""
+        #Alter modification states
+        if keycode in self.mod_keycodes['Shift']:
+            self.shift_state = 1
+        elif keycode in self.mod_keycodes['Alt']:
+            self.alt_state = 2
+        else:
+            pass
 
     def key_release(self, keycode):
-        """This is just for testing"""
-        print('Key Released! {0}'.format(self.lookup_char_from_keycode(keycode)))
+        """A key has been released, do stuff."""
+        #Alter modification states
+        if keycode in self.mod_keycodes['Shift']:
+            self.shift_state = 0
+        elif keycode in self.mod_keycodes['Alt']:
+            self.alt_state = 0
+        else:
+            pass
+
+    def escape_code(self):
+        return(self.lookup_character_value('Escape'))
 
     def lookup_char_from_keycode(self, keycode):
-        keysym =self.display.keycode_to_keysym(keycode, 0)
-        if keysym == 0:
-            print('Keysym is 0')
-        elif keysym:
-            char = self.display.lookup_string(keysym)            
-            #char = keysym_to_string(keysym)
+        keysym =self.display.keycode_to_keysym(keycode, self.shift_state + self.alt_state)
+        if keysym:
+            char = self.display.lookup_string(keysym)
             return char
         else:
             return None
+
+    def get_mod_keycodes(self):
+        """
+        Detects keycodes for modifiers and parses them into a dictionary
+        for easy access.
+        """
+        modifier_mapping = self.display.get_modifier_mapping()
+        modifier_dict = {}
+        nti = [('Shift', X.ShiftMapIndex),
+               ('Control', X.ControlMapIndex), ('Mod1', X.Mod1MapIndex),
+               ('Alt', X.Mod1MapIndex), ('Mod2', X.Mod2MapIndex),
+               ('Mod3', X.Mod3MapIndex), ('Mod4', X.Mod4MapIndex),
+               ('Mod5', X.Mod5MapIndex), ('Lock', X.LockMapIndex)]
+        for n, i in nti:
+            modifier_dict[n] = list(modifier_mapping[i])
+        return modifier_dict
 
     def lookup_character_value(self, character):
         """
@@ -295,11 +326,4 @@ class PyKeyboardEvent(PyKeyboardEventMeta):
         if ch_keysym == 0:
             ch_keysym = string_to_keysym(special_X_keysyms[character])
         return self.display.keysym_to_keycode(ch_keysym)
-
-
-
-
-#myke = PyKeyboardEvent()
-#myke.run()
-
 
