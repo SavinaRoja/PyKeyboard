@@ -24,4 +24,4 @@ elif sys.platform == 'win32':
     from windows import PyKeyboard
 
 else:
-    from x11 import PyKeyboard
+    from x11 import PyKeyboard, PyKeyboardEvent

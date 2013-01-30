@@ -1,9 +1,11 @@
 from Xlib.display import Display
 from Xlib import X
 from Xlib.ext.xtest import fake_input
-from Xlib.XK import string_to_keysym
+from Xlib.XK import string_to_keysym, keysym_to_string
+from Xlib.ext import record
+from Xlib.protocol import rq
 
-from base import PyKeyboardMeta
+from base import PyKeyboardMeta, PyKeyboardEventMeta
 
 import time
 
@@ -48,7 +50,10 @@ special_X_keysyms = {
     }
 
 class PyKeyboard(PyKeyboardMeta):
-    """The PyKeyboard implementation for X11 systems (mostly linux)."""
+    """
+    The PyKeyboard implementation for X11 systems (mostly linux). This
+    allows one to simulate keyboard input.
+    """
     def __init__(self, display=None):
         PyKeyboardMeta.__init__(self)
         self.display = Display(display)
@@ -204,3 +209,97 @@ class PyKeyboard(PyKeyboardMeta):
         if ch_keysym == 0:
             ch_keysym = string_to_keysym(special_X_keysyms[character])
         return self.display.keysym_to_keycode(ch_keysym)
+
+class PyKeyboardEvent(PyKeyboardEventMeta):
+    """
+    The PyKeyboard implementation for X11 systems (mostly linux). This
+    allows one to listen for keyboard input.
+    """
+    def __init__(self, display=None):
+        PyKeyboardEventMeta.__init__(self)
+        self.display = Display(display)
+        self.display2 = Display(display)
+        self.ctx = self.display2.record_create_context(
+            0,
+            [record.AllClients],
+            [{
+                    'core_requests': (0, 0),
+                    'core_replies': (0, 0),
+                    'ext_requests': (0, 0, 0, 0),
+                    'ext_replies': (0, 0, 0, 0),
+                    'delivered_events': (0, 0),
+                    'device_events': (X.KeyPress, X.KeyRelease),
+                    'errors': (0, 0),
+                    'client_started': False,
+                    'client_died': False,
+            }])
+
+    def run(self):
+        """Apply this method to begin listening for keyboard input events."""
+        if self.capture:
+            self.display2.screen().root.grab_keyboard(True, X.KeyPressMask | X.KeyReleaseMask, X.GrabModeAsync, X.GrabModeAsync, 0, 0, X.CurrentTime)
+
+        self.display2.record_enable_context(self.ctx, self.handler)
+        self.display2.record_free_context(self.ctx)    
+
+    def stop(self):
+        """Stop listening for keyboard input events."""
+        self.display.record_disable_context(self.ctx)
+        self.display.ungrab_keyboard(X.CurrentTime)
+        self.display.flush()
+        self.display2.record_disable_context(self.ctx)
+        self.display2.ungrab_keyboard(X.CurrentTime)
+        self.display2.flush()
+
+    def handler(self, reply):
+        """Upper level handler of keyboard events."""
+        data = reply.data
+        while len(data):
+            event, data = rq.EventField(None).parse_binary_value(data, self.display.display, None, None)
+            if event.type == X.KeyPress:
+                #Stop if escape is pressed, this may go away at some point
+                if event.detail == self.lookup_character_value('Escape'):
+                    self.stop()
+                else:
+                    self.key_press(event.detail)
+            elif event.type == X.KeyRelease:
+                self.key_release(event.detail)
+            else:
+                print('WTF: {0}'.format(event.type))
+
+    def key_press(self, keycode):
+        """This is just for testing"""
+        print('Key Pressed! {0}'.format(self.lookup_char_from_keycode(keycode)))
+
+    def key_release(self, keycode):
+        """This is just for testing"""
+        print('Key Released! {0}'.format(self.lookup_char_from_keycode(keycode)))
+
+    def lookup_char_from_keycode(self, keycode):
+        keysym =self.display.keycode_to_keysym(keycode, 0)
+        if keysym == 0:
+            print('Keysym is 0')
+        elif keysym:
+            char = self.display.lookup_string(keysym)            
+            #char = keysym_to_string(keysym)
+            return char
+        else:
+            return None
+
+    def lookup_character_value(self, character):
+        """
+        Looks up the keysym for the character then returns the keycode mapping
+        for that keysym.
+        """
+        ch_keysym = string_to_keysym(character)
+        if ch_keysym == 0:
+            ch_keysym = string_to_keysym(special_X_keysyms[character])
+        return self.display.keysym_to_keycode(ch_keysym)
+
+
+
+
+#myke = PyKeyboardEvent()
+#myke.run()
+
+

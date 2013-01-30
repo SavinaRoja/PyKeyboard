@@ -3,6 +3,7 @@ Provides the operational model.
 """
 
 import time
+from threading import Thread
 
 class PyKeyboardMeta(object):
     """
@@ -41,3 +42,26 @@ class PyKeyboardMeta(object):
         character.
         """
         raise NotImplementedError
+
+class PyKeyboardEventMeta(Thread):
+    """
+    The base class for PyKeyboard. Represents basic operational model.
+    """
+    def __init__(self, capture=False, captureMove=False):
+        Thread.__init__(self)
+        self.daemon = True
+        self.capture = capture
+        self.captureMove = captureMove
+        self.state = True
+
+    def stop(self):
+        self.state = False
+
+    def key_press(self,):
+        """Subclass this method with your key press event handler."""
+        pass
+
+    def key_release(self, x, y):
+        """Subclass this method with your key release event handler."""
+        pass
+
