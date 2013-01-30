@@ -18,10 +18,10 @@ if sys.platform.startswith('java'):
     from java_ import PyKeyboard
 
 elif sys.platform == 'darwin':
-    from mac import PyKeyboard
+    from mac import PyKeyboard, PyKeyboardEvent
 
 elif sys.platform == 'win32':
-    from windows import PyKeyboard
+    from windows import PyKeyboard, PyKeyboardEvent
 
 else:
     from x11 import PyKeyboard, PyKeyboardEvent
