@@ -54,14 +54,27 @@ class PyKeyboardEventMeta(Thread):
         self.captureMove = captureMove
         self.state = True
 
+    def run(self):
+        self.state = True
+
     def stop(self):
         self.state = False
 
-    def key_press(self,):
+    def handler(self):
+        pass
+
+    def key_press(self, key):
         """Subclass this method with your key press event handler."""
         pass
 
-    def key_release(self, x, y):
+    def key_release(self, key):
         """Subclass this method with your key release event handler."""
         pass
 
+    def escape_code(self):
+        """
+        Defines a means to signal a stop to listening. Subclass this with your
+        escape behavior.
+        """
+        escape = None
+        return escape
