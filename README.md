@@ -3,11 +3,11 @@ PyKeyboard
 
 A simple, cross-platform python module for providing keyboard control.
 
-Caveat
-------
+This repository is now inactive and outdated; PyKeyboard has been incorporated
+into PyUserInput where development is active. Please go there for the latest
+in PyKeyboard and PyMouse.
 
-There are a lot of systems out there so development may proceed slowly at
-times.
+https://github.com/SavinaRoja/PyUserInput
 
 Alternatives
 ------------
@@ -24,15 +24,5 @@ implements opencv for image matching.
 
 [sikuli](http://www.sikuli.org/) deserves mention as a notable cross-platform
 GUI-automation tool that provides user emulation and image matching ability.
-
-Todo:
------
-Add support for Windows
-
-Add support for Mac
-
-Add support for mobile systems?
-
-Identify further feature requests (dynamic remapping?)
 
 
